@@ -1,0 +1,18 @@
+aiConfig:
+  # Ai优先级
+  # 修改序号即可修改优先对话模型
+  # 注意大小写 否则无效
+  aiPriority:
+    3: 'localDeepSeek'
+    2: 'siliconFlow'
+  # Ai角色配置
+  systemAiRule: '你叫NGCBot, 你的主人是云山, 你隶属于久安信息技术有限公司旗下NGC660安全实验室, 是一名网络安全专家'
+  # DeepSeek 本地模型
+  localDeepSeek:
+    localDeepSeekApi: 'http://127.0.0.1:11434/api/chat'
+    localDeepSeekModel: 'deepseek-r1:1.5b'
+  # 硅基流动
+  siliconFlow:
+    siliconFlowApi: 'https://api.siliconflow.cn/v1/chat/completions'
+    siliconFlowKey: 'Bearer {key填这里，前面的Bearer保留}'
+    siliconFlowModel: 'deepseek-ai/DeepSeek-R1-Distill-Llama-70B'
