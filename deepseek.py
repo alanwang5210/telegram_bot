@@ -1,13 +1,12 @@
 import requests
 
-import config
+from config import config_data
 from OutPut import op
 
 
 class AiDialogue:
 
     def __init__(self):
-        config_data = config.get_config_data()
         self.systemAiRole = config_data['aiConfig']['systemAiRule']
 
         self.localDeepSeekModelConfig = {
@@ -37,7 +36,7 @@ class AiDialogue:
         message.append({"role": "user", "content": f'{content}'})
         data = {
             "model": self.siliconFlowConfig.get('siliconFlowModel'),
-            "messages": messages
+            "messages": message
         }
         headers = {
             "Content-Type": "application/json",
@@ -71,7 +70,7 @@ class AiDialogue:
         message.append({"role": "user", "content": f'{content}'})
         data = {
             "model": self.localDeepSeekModelConfig.get('localDeepSeekModel'),
-            'messages': messages,
+            'messages': message,
             'stream': False
         }
         try:
@@ -107,4 +106,5 @@ class AiDialogue:
 if __name__ == '__main__':
     messages = []
     Ad = AiDialogue()
-    Ad.get_ai("hello")
+    reply = Ad.get_ai('你好')
+    print(reply)

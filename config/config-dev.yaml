@@ -1,0 +1,105 @@
+aiConfig:
+  # Ai优先级
+  # 修改序号即可修改优先对话模型
+  # 注意大小写 否则无效
+  aiPriority:
+    3: 'localDeepSeek'
+    2: 'siliconFlow'
+  # Ai角色配置
+  systemAiRule: '你叫NGCBot, 你的主人是云山, 你隶属于久安信息技术有限公司旗下NGC660安全实验室, 是一名网络安全专家'
+  # DeepSeek 本地模型
+  localDeepSeek:
+    localDeepSeekApi: 'http://127.0.0.1:11434/api/chat'
+    localDeepSeekModel: 'deepseek-r1:1.5b'
+  # 硅基流动
+  siliconFlow:
+    siliconFlowApi: 'https://api.siliconflow.cn/v1/chat/completions'
+    siliconFlowKey: 'Bearer sk-iwscditogmbqprtlnthibskingrxjyngugqtralwizhixykb'
+    siliconFlowModel: 'deepseek-ai/DeepSeek-R1-Distill-Llama-70B'
+
+
+# Telegram Bot配置
+bot:
+  token: your_telegram_bot_token_here
+  username: your_bot_username_here
+  admin_user_ids:
+    - 123456789
+    - 987654321
+
+# 数据库配置
+database:
+  host: localhost
+  port: 3306
+  user: root
+  password: your_password_here
+  name: telegram_vip_bot
+
+# 支付配置
+payment:
+  crypto_enabled: true
+  third_party_enabled: true
+  card_enabled: true
+
+# 订阅配置
+subscription:
+  plans:
+    monthly:
+      name: 月度VIP
+      duration_days: 30
+      price: 29.9
+      description: 30天VIP会员权限
+    quarterly:
+      name: 季度VIP
+      duration_days: 90
+      price: 79.9
+      description: 90天VIP会员权限
+    yearly:
+      name: 年度VIP
+      duration_days: 365
+      price: 299.9
+      description: 365天VIP会员权限
+
+# 邮件配置
+email:
+  notifications_enabled: true
+  sender: noreply@example.com
+  smtp:
+    server: smtp.example.com
+    port: 587
+    username: your_smtp_username
+    password: your_smtp_password
+
+# 消息配置
+messages:
+  welcome: |
+    欢迎使用VIP付费机器人！
+
+    您可以通过以下命令操作：
+    /start - 开始使用
+    /help - 获取帮助
+    /subscribe - 订阅VIP
+    /status - 查看订阅状态
+    /cancel - 取消订阅
+
+    如需帮助，请联系管理员。
+  help: |
+    VIP付费机器人使用帮助：
+
+    基本命令：
+    /start - 开始使用
+    /help - 获取帮助
+    /subscribe - 订阅VIP
+    /status - 查看订阅状态
+    /cancel - 取消订阅
+
+    支付方式：
+    - 卡密支付
+    - 数字货币支付
+    - 第三方支付
+
+    如有问题，请联系管理员。
+
+# 系统配置
+system:
+  log_level: INFO
+  timezone: Asia/Shanghai
