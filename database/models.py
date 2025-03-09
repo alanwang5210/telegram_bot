@@ -2,8 +2,9 @@
 
 import datetime
 import pymysql
+import json
 
-from config import DB_HOST, DB_PASSWORD, DB_PORT, DB_USER, DB_NAME
+from config import DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
 
 
 # 数据库连接初始化
@@ -11,15 +12,19 @@ def get_db_connection():
     """
     获取数据库连接
     """
-    return pymysql.connect(
+
+    # 建立数据库连接
+    connection = pymysql.connect(
         host=DB_HOST,
-        port=DB_PORT,
         user=DB_USER,
         password=DB_PASSWORD,
-        database=DB_NAME,
+        port=DB_PORT,
+        db=DB_NAME,
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor
     )
+    return connection
+
 
 # 初始化数据库表
 def init_database():
@@ -45,7 +50,7 @@ def init_database():
                 INDEX idx_telegram_id (telegram_id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             """)
-            
+
             # 创建订阅记录表
             cursor.execute("""
             CREATE TABLE IF NOT EXISTS subscriptions (
@@ -63,7 +68,7 @@ def init_database():
                 INDEX idx_end_date (end_date)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             """)
-            
+
             # 创建支付记录表
             cursor.execute("""
             CREATE TABLE IF NOT EXISTS payments (
@@ -84,7 +89,7 @@ def init_database():
                 INDEX idx_status (status)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             """)
-            
+
             # 创建卡密表
             cursor.execute("""
             CREATE TABLE IF NOT EXISTS card_keys (
@@ -100,7 +105,7 @@ def init_database():
                 INDEX idx_is_used (is_used)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             """)
-            
+
             # 创建消息表
             cursor.execute("""
             CREATE TABLE IF NOT EXISTS messages (
@@ -114,7 +119,7 @@ def init_database():
                 FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             """)
-            
+
             # 创建消息发送记录表
             cursor.execute("""
             CREATE TABLE IF NOT EXISTS message_deliveries (
@@ -129,7 +134,7 @@ def init_database():
                 UNIQUE KEY unique_message_user (message_id, user_id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             """)
-            
+
             # 创建通知记录表
             cursor.execute("""
             CREATE TABLE IF NOT EXISTS notifications (
@@ -148,13 +153,14 @@ def init_database():
                 INDEX idx_is_sent (is_sent)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             """)
-        
+
         conn.commit()
     except Exception as e:
         conn.rollback()
         raise e
     finally:
         conn.close()
+
 
 # 用户模型类
 class User:
@@ -166,7 +172,7 @@ class User:
         self.email = email
         self.is_vip = False
         self.subscription_end_date = None
-    
+
     def save(self):
         """
         保存或更新用户信息
@@ -180,7 +186,7 @@ class User:
                     (self.telegram_id,)
                 )
                 user = cursor.fetchone()
-                
+
                 if user:
                     # 更新现有用户
                     cursor.execute(
@@ -199,7 +205,7 @@ class User:
                         (self.telegram_id, self.username, self.first_name, self.last_name, self.email)
                     )
                     user_id = cursor.lastrowid
-                
+
                 conn.commit()
                 return user_id
         except Exception as e:
@@ -207,7 +213,7 @@ class User:
             raise e
         finally:
             conn.close()
-    
+
     @staticmethod
     def get_by_telegram_id(telegram_id):
         """
@@ -223,7 +229,7 @@ class User:
                 return cursor.fetchone()
         finally:
             conn.close()
-    
+
     @staticmethod
     def update_vip_status(user_id, is_vip, subscription_end_date=None):
         """
@@ -245,6 +251,7 @@ class User:
         finally:
             conn.close()
 
+
 # 订阅模型类
 class Subscription:
     def __init__(self, user_id, plan_type, start_date, end_date, auto_renew=False):
@@ -254,7 +261,7 @@ class Subscription:
         self.end_date = end_date
         self.auto_renew = auto_renew
         self.is_active = True
-    
+
     def save(self):
         """
         保存订阅信息
@@ -266,22 +273,22 @@ class Subscription:
                     """INSERT INTO subscriptions 
                     (user_id, plan_type, start_date, end_date, is_active, auto_renew) 
                     VALUES (%s, %s, %s, %s, %s, %s)""",
-                    (self.user_id, self.plan_type, self.start_date, self.end_date, 
+                    (self.user_id, self.plan_type, self.start_date, self.end_date,
                      self.is_active, self.auto_renew)
                 )
                 subscription_id = cursor.lastrowid
                 conn.commit()
-                
+
                 # 更新用户VIP状态
                 User.update_vip_status(self.user_id, True, self.end_date)
-                
+
                 return subscription_id
         except Exception as e:
             conn.rollback()
             raise e
         finally:
             conn.close()
-    
+
     @staticmethod
     def get_active_by_user_id(user_id):
         """
@@ -299,7 +306,7 @@ class Subscription:
                 return cursor.fetchone()
         finally:
             conn.close()
-    
+
     @staticmethod
     def cancel_subscription(subscription_id):
         """
@@ -314,10 +321,10 @@ class Subscription:
                     (subscription_id,)
                 )
                 subscription = cursor.fetchone()
-                
+
                 if not subscription:
                     return False
-                
+
                 # 更新订阅状态
                 cursor.execute(
                     """UPDATE subscriptions 
@@ -325,7 +332,7 @@ class Subscription:
                     WHERE id = %s""",
                     (subscription_id,)
                 )
-                
+
                 # 检查用户是否还有其他活跃订阅
                 cursor.execute(
                     """SELECT COUNT(*) as count FROM subscriptions 
@@ -333,11 +340,11 @@ class Subscription:
                     (subscription['user_id'],)
                 )
                 result = cursor.fetchone()
-                
+
                 # 如果没有其他活跃订阅，更新用户VIP状态
                 if result['count'] == 0:
                     User.update_vip_status(subscription['user_id'], False, None)
-                
+
                 conn.commit()
                 return True
         except Exception as e:
@@ -345,7 +352,7 @@ class Subscription:
             raise e
         finally:
             conn.close()
-    
+
     @staticmethod
     def get_expiring_subscriptions(days=3):
         """
@@ -367,6 +374,7 @@ class Subscription:
         finally:
             conn.close()
 
+
 # 支付模型类
 class Payment:
     def __init__(self, user_id, payment_type, amount, currency='CNY', subscription_id=None):
@@ -378,11 +386,64 @@ class Payment:
         self.status = 'pending'
         self.transaction_id = None
         self.payment_data = {}
-    
+
     def save(self):
         """
         保存支付记录
         """
         conn = get_db_connection()
         try:
-            with conn.
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """INSERT INTO payments 
+                    (user_id, subscription_id, payment_type, amount, currency, status, transaction_id, payment_data) 
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+                    (self.user_id, self.subscription_id, self.payment_type, self.amount,
+                     self.currency, self.status, self.transaction_id,
+                     json.dumps(self.payment_data) if self.payment_data else None)
+                )
+                payment_id = cursor.lastrowid
+                conn.commit()
+                return payment_id
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_by_telegram_id(telegram_id):
+        """
+        通过Telegram ID获取用户
+        """
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "SELECT * FROM users WHERE telegram_id = %s",
+                    (telegram_id,)
+                )
+                return cursor.fetchone()
+        finally:
+            conn.close()
+
+    @staticmethod
+    def update_vip_status(user_id, is_vip, subscription_end_date=None):
+        """
+        更新用户VIP状态
+        """
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """UPDATE users 
+                    SET is_vip = %s, subscription_end_date = %s 
+                    WHERE id = %s""",
+                    (is_vip, subscription_end_date, user_id)
+                )
+                conn.commit()
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.close()

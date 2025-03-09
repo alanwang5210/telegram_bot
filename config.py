@@ -3,18 +3,20 @@
 import os
 import yaml
 
+
 # 加载YAML配置文件
 def load_config():
-    config_path = os.path.join(os.path.dirname(__file__), 'config-dev.yaml')
-    
+    config_path = os.path.join(os.path.dirname(__file__), './config/config-dev.yaml')
+
     with open(config_path, 'r', encoding='utf-8') as f:
         return yaml.safe_load(f)
+
 
 # 加载配置
 config_data = load_config()
 
 # Bot配置
-BOT_TOKEN = config_data['bot']['token']
+TELEGRAM_BOT_TOKEN = config_data['bot']['token']
 BOT_USERNAME = config_data['bot']['username']
 ADMIN_USER_IDS = config_data['bot']['admin_user_ids']
 
@@ -38,7 +40,7 @@ EMAIL_NOTIFICATIONS_ENABLED = config_data['email']['notifications_enabled']
 EMAIL_SENDER = config_data['email']['sender']
 SMTP_SERVER = config_data['email']['smtp']['server']
 SMTP_PORT = config_data['email']['smtp']['port']
-SMTP_USERNAME = config_data['email']['smtp']['username']
+SMTP_USER = config_data['email']['smtp']['username']
 SMTP_PASSWORD = config_data['email']['smtp']['password']
 
 # 消息配置

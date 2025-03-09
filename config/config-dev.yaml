@@ -6,7 +6,7 @@ aiConfig:
     3: 'localDeepSeek'
     2: 'siliconFlow'
   # Ai角色配置
-  systemAiRule: '你叫NGCBot, 你的主人是云山, 你隶属于久安信息技术有限公司旗下NGC660安全实验室, 是一名网络安全专家'
+  systemAiRule: '你叫小合, 你的主人是小芳, 是一名智能助理'
   # DeepSeek 本地模型
   localDeepSeek:
     localDeepSeekApi: 'http://127.0.0.1:11434/api/chat'
@@ -31,8 +31,9 @@ database:
   host: localhost
   port: 3306
   user: root
-  password: your_password_here
+  password: '123456'
   name: telegram_vip_bot
+
 
 # 支付配置
 payment:
